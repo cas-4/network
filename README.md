@@ -3,6 +3,14 @@
 <img src="https://avatars.githubusercontent.com/u/175958109?s=100&v=4" alt="Logo" align="right"/>
 
 This repository refers to the network of the CAS-4 project of this organisation.
+The following networking setup is a Kubernetes application which uses KubeEdge
+to run some an application on simulated bare nodes.
+
+This represents a orchestration of:
+
+- [`cas-4/backend`](https://github.com/cas-4/backend)
+- [`cas-4/frontend`](https://github.com/cas-4/frontend)
+- [`cas-4/alertd`](https://github.com/cas-4/alertd)
 
 ## Set up
 
