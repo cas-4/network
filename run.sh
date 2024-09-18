@@ -19,14 +19,14 @@ fi
 K8S_FOLDER="./yaml"
 
 YAML_FILES=(
-  "cas-config.yaml"
-  "cas-deployment.yaml"
-  "cas-secret.yaml"
-  "cas-service.yaml"
-  "network-policy.yaml"
-  "pgdata-pvc.yaml"
-  "postgres-deployment.yaml"
-  "postgres-service.yaml"
+  "configs/cas.yaml"
+  "deployments/cas.yaml"
+  "secrets/cas.yaml"
+  "services/cas.yaml"
+  "policies/network.yaml"
+  "pvcs/pgdata.yaml"
+  "deployments/postgres.yaml"
+  "services/postgres.yaml"
 )
 
 for file in "${YAML_FILES[@]}"; do
