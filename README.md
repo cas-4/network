@@ -10,7 +10,6 @@ This represents a orchestration of:
 
 - [`cas-4/backend`](https://github.com/cas-4/backend)
 - [`cas-4/frontend`](https://github.com/cas-4/frontend)
-- [`cas-4/alertd`](https://github.com/cas-4/alertd)
 
 ## Set up
 
