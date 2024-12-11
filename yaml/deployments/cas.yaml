@@ -47,6 +47,11 @@ spec:
                 configMapKeyRef:
                   name: cas-config
                   key: ALLOWED_HOST
+            - name: AUDIO_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: cas-config
+                  key: AUDIO_PATH
           ports:
             - containerPort: 8000
       restartPolicy: Always

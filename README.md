@@ -20,6 +20,8 @@ you Minikube in this case) you have to set up the environment:
 - `EXPO_ACCESS_TOKEN`: the base64 version of the [Expo](https://expo.dev) access token.
 - `UNREALSPEECH_TOKEN`: the base64 version of the [Unrealspeech](https://unrealspeech.com/) access token.
 - `RUST_LOG`: level of Rust logging
+- `AUDIO_PATH`: path for the audio folder
+- `ALLOWED_HOST`: host for the app
 
 After that just run
 
