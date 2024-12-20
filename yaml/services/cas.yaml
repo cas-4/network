@@ -10,4 +10,4 @@ spec:
       protocol: TCP
   selector:
     app: cas
-  type: ClusterIP
+  type: LoadBalancer

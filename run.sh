@@ -27,6 +27,8 @@ YAML_FILES=(
   "pvcs/pgdata.yaml"
   "deployments/postgres.yaml"
   "services/postgres.yaml"
+  "networking/ingress.yaml"
+  "networking/balance.yaml"
 )
 
 for file in "${YAML_FILES[@]}"; do
