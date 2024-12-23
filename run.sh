@@ -27,7 +27,6 @@ YAML_FILES=(
   "pvcs/pgdata.yaml"
   "deployments/postgres.yaml"
   "services/postgres.yaml"
-  "networking/ingress.yaml"
   "networking/balance.yaml"
 )
 
