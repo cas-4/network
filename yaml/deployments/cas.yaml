@@ -14,6 +14,13 @@ spec:
       labels:
         app: cas-app
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: cas-app
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: cas
           image: ghcr.io/cas-4/backend:latest
