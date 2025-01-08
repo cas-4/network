@@ -30,10 +30,17 @@ Meanwhile the followings are setted up by default.
 - `AUDIO_PATH`: "./assets"
 - `ALLOWED_HOST`: "0.0.0.0:8000"
 
+First of all you must create a new cluster for KinD. We need it for some worker
+(let's say 4).
+
+```
+$ kind create cluster --config yaml/cluster/kind-cluster-config.yaml
+```
+
 After that just run the `run.sh` script.
 
 ```sh
-./run.sh apply
+$ ./run.sh apply
 ```
 
 After that, you'll be able to see what the external IP for the load balancer is.
