@@ -21,6 +21,13 @@ spec:
                 matchLabels:
                   app: cas-app
               topologyKey: "kubernetes.io/hostname"
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "500Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
       containers:
         - name: cas
           image: ghcr.io/cas-4/backend:latest
