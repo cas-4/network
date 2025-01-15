@@ -38,6 +38,11 @@ First of all you must create a new cluster for KinD. We need it for some worker
 $ kind create cluster --config yaml/cluster/kind-cluster-config.yaml
 ```
 
+You also need to install a component for metrics.
+```
+$ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
+
 After that just run the `run.sh` script.
 
 ```sh
