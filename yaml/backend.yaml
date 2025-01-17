@@ -7,6 +7,7 @@ data:
   DATABASE_URL: "postgres://postgres:password@postgres-service:5432/gis"
   ALLOWED_HOST: "0.0.0.0:8000"
   AUDIO_PATH: "./assets"
+  UNREALSPEECH_TOKEN: ${UNREALSPEECH_TOKEN}
 ---
 apiVersion: v1
 kind: Secret
@@ -16,7 +17,6 @@ type: Opaque
 data:
   JWT_SECRET: ${JWT_SECRET}
   EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN}
-  UNREALSPEECH_TOKEN: ${UNREALSPEECH_TOKEN}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -75,8 +75,8 @@ spec:
                   key: EXPO_ACCESS_TOKEN
             - name: UNREALSPEECH_TOKEN
               valueFrom:
-                secretKeyRef:
-                  name: cas-backend-secret
+                configMapKeyRef:
+                  name: cas-backend-config
                   key: UNREALSPEECH_TOKEN
             - name: ALLOWED_HOST
               valueFrom:

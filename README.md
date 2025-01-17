@@ -22,7 +22,7 @@ Now, you can proceed to set up some environment variables:
 
 - `JWT_SECRET`: the base64 version of the secret used for JWT tokens.
 - `EXPO_ACCESS_TOKEN`: the base64 version of the [Expo](https://expo.dev) access token.
-- `UNREALSPEECH_TOKEN`: the base64 version of the [Unrealspeech](https://unrealspeech.com/) access token.
+- `UNREALSPEECH_TOKEN`: [Unrealspeech](https://unrealspeech.com/) access token.
 - `RUST_LOG`: level of Rust logging.
 - `VITE_API_URL`: url for the backend API.
 
