@@ -36,3 +36,45 @@ spec:
         - name: schema
           hostPath:
             path: ${PGDATA}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cas-postgres
+spec:
+  podSelector:
+    matchLabels:
+      app: cas
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgdata-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

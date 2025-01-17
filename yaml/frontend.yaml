@@ -1,17 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cas-frontend-config
+data:
+  VITE_API_URL: ${VITE_API_URL}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: cas-frontend-deployment
   labels:
-    app: frontend-app
+    app: cas-frontend-app
 spec:
   selector:
     matchLabels:
-      app: frontend-app
+      app: cas-frontend-app
   template:
     metadata:
       labels:
-        app: frontend-app
+        app: cas-frontend-app
     spec:
       containers:
         - name: frontend
@@ -23,6 +30,18 @@ spec:
             - name: VITE_API_URL
               valueFrom:
                 configMapKeyRef:
-                  name: frontend-config
+                  name: cas-frontend-config
                   key: VITE_API_URL
       restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cas-frontend-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: cas-frontend-app
+  type: ClusterIP

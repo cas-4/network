@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cas-backend-config
+data:
+  RUST_LOG: ${RUST_LOG}
+  DATABASE_URL: "postgres://postgres:password@postgres-service:5432/gis"
+  ALLOWED_HOST: "0.0.0.0:8000"
+  AUDIO_PATH: "./assets"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cas-backend-secret
+type: Opaque
+data:
+  JWT_SECRET: ${JWT_SECRET}
+  EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN}
+  UNREALSPEECH_TOKEN: ${UNREALSPEECH_TOKEN}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cas-backend-deployment
+  labels:
+    app: cas-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cas-backend
+  template:
+    metadata:
+      labels:
+        app: cas-backend
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: cas-backend
+              topologyKey: "kubernetes.io/hostname"
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "500Mi"
+        limits:
+          cpu: "500m"
+          memory: "1Gi"
+      containers:
+        - name: cas
+          image: ghcr.io/cas-4/backend:latest
+          imagePullPolicy: Always
+          env:
+            - name: RUST_LOG
+              valueFrom:
+                configMapKeyRef:
+                  name: cas-backend-config
+                  key: RUST_LOG
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: cas-backend-config
+                  key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cas-secret
+                  key: JWT_SECRET
+            - name: EXPO_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cas-secret
+                  key: EXPO_ACCESS_TOKEN
+            - name: UNREALSPEECH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cas-secret
+                  key: UNREALSPEECH_TOKEN
+            - name: ALLOWED_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: cas-backend-config
+                  key: ALLOWED_HOST
+            - name: AUDIO_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: cas-backend-config
+                  key: AUDIO_PATH
+          ports:
+            - containerPort: 8000
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cas-backend-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: cas-backend
+  type: LoadBalancer
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cas-backend-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cas-backend-deployment
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15

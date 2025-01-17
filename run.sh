@@ -18,20 +18,7 @@ fi
 
 K8S_FOLDER="./yaml"
 
-YAML_FILES=(
-  "configs/cas.yaml"
-  "configs/frontend.yaml"
-  "deployments/cas.yaml"
-  "deployments/frontend.yaml"
-  "secrets/cas.yaml"
-  "services/cas.yaml"
-  "policies/network.yaml"
-  "pvcs/pgdata.yaml"
-  "deployments/postgres.yaml"
-  "services/postgres.yaml"
-  "deployments/frontend.yaml"
-  "networking/balance.yaml"
-)
+YAML_FILES=( "postgres.yaml" "backend.yaml" "frontend.yaml" )
 
 for file in "${YAML_FILES[@]}"; do
   file="$K8S_FOLDER/$file"
