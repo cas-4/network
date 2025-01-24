@@ -1,3 +1,84 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-credentials
+type: Opaque
+stringData:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password
+  POSTGRES_DB: gis
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+data:
+  init.sql: |
+    CREATE TABLE users(
+        id SERIAL NOT NULL,
+        email text NOT NULL,
+        password text NOT NULL,
+        name text NULL,
+        address text NULL,
+        notification_token text NULL,
+        is_admin boolean default false,
+        PRIMARY KEY (id)
+    );
+
+    CREATE TYPE moving_activity AS ENUM ('InVehicle', 'Running', 'Walking', 'Still');
+
+    CREATE TABLE positions(
+        id SERIAL NOT NULL,
+        user_id INTEGER NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        location GEOGRAPHY(Point, 4326) NOT NULL,
+        activity moving_activity NOT NULL,
+        PRIMARY KEY(id),
+        CONSTRAINT fk_users_id
+            FOREIGN KEY(user_id) REFERENCES users(id)
+            ON DELETE CASCADE,
+        CONSTRAINT unique_user_position UNIQUE(user_id)
+    );
+
+    CREATE TYPE level_alert AS ENUM ('One', 'Two', 'Three');
+
+    CREATE TABLE alerts(
+        id SERIAL NOT NULL,
+        user_id INTEGER NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        area GEOMETRY(Polygon, 4326),
+        text1 text NOT NULL,
+        text2 text NOT NULL,
+        text3 text NOT NULL,
+        audio1 bytea NOT NULL,
+        audio2 bytea NOT NULL,
+        audio3 bytea NOT NULL,
+        reached_users INTEGER DEFAULT 0 NOT NULL,
+        PRIMARY KEY(id),
+        CONSTRAINT fk_users_id 
+            FOREIGN KEY(user_id) REFERENCES users(id)
+            ON DELETE CASCADE
+    );
+
+    CREATE TABLE notifications(
+        id SERIAL NOT NULL,
+        alert_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        location GEOGRAPHY(Point, 4326) NOT NULL,
+        activity moving_activity NOT NULL,
+        seen BOOLEAN DEFAULT false,
+        level level_alert NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY(id),
+        CONSTRAINT fk_alerts_id
+            FOREIGN KEY(alert_id) REFERENCES alerts(id)
+            ON DELETE CASCADE,
+        CONSTRAINT fk_users_id
+            FOREIGN KEY(user_id) REFERENCES users(id)
+            ON DELETE CASCADE
+    );
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,30 +93,35 @@ spec:
       labels:
         app: postgres
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
         - name: postgres
           image: postgis/postgis:16-3.4
-          env:
-            - name: POSTGRES_USER
-              value: "postgres"
-            - name: POSTGRES_PASSWORD
-              value: "password"
-            - name: POSTGRES_DB
-              value: "gis"
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
           ports:
             - containerPort: 5432
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: pgdata
             - mountPath: /docker-entrypoint-initdb.d
-              name: schema
+              name: init-scripts
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
       volumes:
         - name: pgdata
           persistentVolumeClaim:
             claimName: pgdata-pvc
-        - name: schema
-          hostPath:
-            path: ${PGDATA}
+        - name: init-scripts
+          configMap:
+            name: postgres-init-scripts
 ---
 apiVersion: v1
 kind: Service
@@ -78,3 +164,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  storageClassName: standard
