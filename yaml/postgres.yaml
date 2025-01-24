@@ -42,6 +42,8 @@ metadata:
   name: postgres-init-scripts
 data:
   init.sql: |
+    CREATE EXTENSION postgis;
+
     CREATE TABLE users(
         id SERIAL NOT NULL,
         email text NOT NULL,
