@@ -41,13 +41,6 @@ spec:
                 matchLabels:
                   app: cas-backend
               topologyKey: "kubernetes.io/hostname"
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "500Mi"
-        limits:
-          cpu: "500m"
-          memory: "1Gi"
       containers:
         - name: cas
           image: ghcr.io/cas-4/backend:latest
@@ -88,6 +81,13 @@ spec:
                 configMapKeyRef:
                   name: cas-backend-config
                   key: AUDIO_PATH
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "500Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
           ports:
             - containerPort: 8000
       restartPolicy: Always
@@ -96,6 +96,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cas-backend-service
+  annotations:
+    service.beta.kubernetes.io/cilium-loadbalancer-mode: "hybrid"
+    service.beta.kubernetes.io/cilium-external-ips: "enabled"
 spec:
   ports:
     - port: 80
