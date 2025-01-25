@@ -142,3 +142,7 @@ $ curl -X POST http://my-cas4-domain.com/api/graphql \
   }
 }'
 ```
+
+And the frontend is up.
+
+![demo frontend](./assets/demo.png)
