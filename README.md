@@ -54,7 +54,7 @@ After that, you'll be able to see what the external IP for the load balancer is.
 $ k get svc
 NAME                   TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 cas-backend-service    LoadBalancer   10.96.107.232   172.18.0.3    80:32697/TCP   18h
-cas-frontend-service   ClusterIP      10.96.49.130    <none>        80/TCP         18h
+cas-frontend-service   NodePort       10.96.49.130    <none>        80/TCP         18h
 postgres-service       ClusterIP      10.96.150.101   <none>        5432/TCP       18h
 ```
 
@@ -77,46 +77,54 @@ $ curl -X POST http://172.18.0.3/graphql \
 If you receive a network error you just need to wait until the
 `cloud-provider-kind` works.
 
-## Use Nginx as reverse proxy
+## Deploy on production
 
 We tested this project in production using Nginx as revere proxy. Indeed, at the
 endpoint `server_name` an user could access to the frontend project (i.e. admin
 cp).
 
-First of all, you need to port-forward the `cas-frontend-service` service.
+We chose [Kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) and [Cilium](https://cilium.io/use-cases/load-balancer/) as Load Balancer.
+
+Also, you need to set up Nginx server as reverse proxy.
 
 ```
-$ kubectl port-forward svc/cas-frontend-service 8080:80 &
+$ frontend_ip=`k get svc cas-frontend-service -ojson | jq .spec.clusterIP`
+$ backend_ip=`k get svc cas-backend-service -ojson | jq .spec.clusterIP`
 ```
 
-After that you have to configure Nginx server.
-
 ```
+# /etc/nginx/sites-available/proxy
 server {
     listen 80;
     server_name my-cas4-domain.com;
 
     location / {
-        proxy_pass http://0.0.0.0:8080;
+        proxy_pass http://<frontend-ip>;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     location /api/graphql {
-        proxy_pass http://172.18.0.3:80/graphql;
+        proxy_pass http://<backend-ip>/graphql;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     location /api {
-        proxy_pass http://172.18.0.3:80;
+        proxy_pass http://<backend-ip>:80;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
+```
+
+Do not forget to enable the server.
+
+```
+$ sudo ln -s /etc/nginx/sites-available/proxy /etc/nginx/sites-enabled/proxy
 ```
 
 After a Nginx restart, just check if the API still works.
